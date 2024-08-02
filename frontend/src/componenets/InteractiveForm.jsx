@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react/prop-types */
+import { useState } from 'react';
 import { FaDollarSign } from 'react-icons/fa6';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import states from 'states-us';
 
-const InteractiveForm = () => {
-  const [step, setStep] = useState(0);
+const InteractiveForm = ({ step, setStep }) => {
   const [incomeType, setIncomeType] = useState('Gross');
   const [incomePeriod, setIncomePeriod] = useState('Anually');
   const [stdDeduction, setStdDeduction] = useState(true);
-  const [dependants, setDependants] = useState(0);
+  const [dependents, setDependents] = useState(0);
+  const [dependentsU18, setDependentsU18] = useState(0);
+  const [hasDependents, setHasDependents] = useState(false);
   const [filingStatus, setFilingStatus] = useState('MarriedFilingJointly');
 
   const [formData, setFormData] = useState({
@@ -22,10 +24,6 @@ const InteractiveForm = () => {
     dectionAmount: '',
     tax: 0,
   });
-
-  useState(() => {
-    console.log(states);
-  }, []);
 
   const handleNext = () => {
     setStep(step + 1);
@@ -60,8 +58,18 @@ const InteractiveForm = () => {
     handleChange(e);
   };
 
-  const onDependantsChange = (e) => {
-    setDependants(e.target.value);
+  const onHasDependentsChange = (e) => {
+    setHasDependents(!hasDependents);
+    handleChange(e);
+  };
+
+  const onDependentsChange = (e) => {
+    setDependents(e.target.value);
+    handleChange(e);
+  };
+
+  const onDependentsU18Change = (e) => {
+    setDependentsU18(e.target.value);
     handleChange(e);
   };
 
@@ -419,6 +427,100 @@ const InteractiveForm = () => {
     </>
   );
 
+  const renderStep4 = (
+    <>
+      <div className=' flex flex-col items-center h-72 w-full'>
+        <div className='text-2xl font-semibold pb-4 pt-4'>
+          Lets count dependents
+        </div>
+        <div className='grid w-[20rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-gray-200 p-0'>
+          <div>
+            <input
+              type='radio'
+              name='dependents'
+              id='NoDependents'
+              value={hasDependents}
+              className='peer hidden'
+              checked={hasDependents === false}
+              onChange={(e) => {
+                onHasDependentsChange(e);
+                setDependents(0);
+              }}
+            />
+            <label
+              htmlFor='NoDependents'
+              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
+              No Dependents
+            </label>
+          </div>
+
+          <div>
+            <input
+              type='radio'
+              name='dependents'
+              id='moreThanZero'
+              value={hasDependents}
+              className='peer hidden'
+              checked={hasDependents == true}
+              onChange={onHasDependentsChange}
+            />
+            <label
+              htmlFor='moreThanZero'
+              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
+              Have Dependents
+            </label>
+          </div>
+        </div>
+        {hasDependents ? (
+          <>
+            <div className='w-[20rem] grid justify-center items-center '>
+              <label htmlFor='numberOfDependents' className='italic'>
+                Enter the number of Dependents:
+              </label>
+              <div className='flex justify-center'>
+                <input
+                  name='numberOfDependents'
+                  type='number'
+                  placeholder='Number of Dependents'
+                  value={dependents}
+                  className='border border-gray-400 w-[10rem] rounded-lg py-3 pl-8 '
+                  onChange={onDependentsChange}
+                />
+              </div>
+            </div>
+            <div className='w-[20rem] grid justify-center items-center '>
+              <label htmlFor='numberOfDependentsU18' className='italic'>
+                Enter the number of Dependents under 18:
+              </label>
+              <div className='flex justify-center'>
+                <input
+                  name='numberOfDependentsU18'
+                  type='number'
+                  placeholder='Number of Dependents under 18'
+                  value={dependentsU18}
+                  className='border border-gray-400 rounded-lg py-3 pl-8 w-[10rem]'
+                  onChange={onDependentsU18Change}
+                />
+              </div>
+            </div>
+          </>
+        ) : null}
+      </div>
+      <div className='flex justify-center items-center space-x-4 mb-6'>
+        <button
+          className='grid items-end justify-center bg-slate-700 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
+          onClick={handleBack}>
+          Back
+        </button>
+        <button
+          className='grid items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
+          onClick={handleNext}>
+          Next
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className='grid justify-center pt-4'>
       {step === 0
@@ -427,7 +529,11 @@ const InteractiveForm = () => {
         ? renderStep1
         : step === 2
         ? renderStep2
-        : 'step 4'}
+        : step === 3
+        ? renderStep3
+        : step === 4
+        ? renderStep4
+        : 'Results'}
     </div>
   );
 };

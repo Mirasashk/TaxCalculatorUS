@@ -12,12 +12,12 @@ function App() {
         <div className='grid justify-center font-light px-96 text-white mt-2'>
           <p className='font-sans text-center'>
             Welcome to the Effortless Income Tax Calculator, your tool for easy
-            and accurate tax estimation. Whether you're salaried, self-employed,
-            or have multiple income sources, our user-friendly calculator
-            simplifies tax calculations. Just input your financial details, and
-            get a clear tax breakdown in minutes. Say goodbye to tax-time stress
-            and manage your finances smarter with our precise and up-to-date
-            tool.
+            and accurate tax estimation. Whether you&apos;re salaried,
+            self-employed, or have multiple income sources, our user-friendly
+            calculator simplifies tax calculations. Just input your financial
+            details, and get a clear tax breakdown in minutes. Say goodbye to
+            tax-time stress and manage your finances smarter with our precise
+            and up-to-date tool.
           </p>
         </div>
         <div className='px-96 pt-8'>

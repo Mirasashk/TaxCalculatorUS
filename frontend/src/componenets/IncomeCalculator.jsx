@@ -1,4 +1,3 @@
-import React from 'react';
 import CalculatorForm from './CalculatorForm';
 
 const IncomeCalculator = () => {
