@@ -11,17 +11,26 @@ const { onRequest } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const express = require('express');
 const cors = require('cors');
+const calculations = require('./routes/calculations');
 
 const app = express();
 const corsOptions = {
   origin: ['https://taxcalculatorus.web.app', 'http://localhost:5173'],
   optionsSuccessStatus: 200,
 };
-app.use(cors({ origin: true }));
+app.use(cors(corsOptions));
 
-app.get('/hello', (request, response) => {
-  logger.info('Hello logs!', { structuredData: true });
-  response.send('Hello from Firebase!');
+app.use('/calculations', calculations);
+
+// error handler
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
 });
 
 exports.app = onRequest(app);
