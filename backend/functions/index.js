@@ -12,6 +12,8 @@ const logger = require('firebase-functions/logger');
 const express = require('express');
 const cors = require('cors');
 const calculations = require('./routes/calculations');
+const { db } = require('./services/Firebase');
+const { stateTaxes } = require('./utils/stateTaxes');
 
 const app = express();
 const corsOptions = {
@@ -21,6 +23,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use('/calculations', calculations);
+
+// const importJSON = async () => {
+//   db.collection('statesTaxInfo')
+//     .doc('2024')
+//     .collection('stateTaxes')
+//     .doc('washington, dc')
+//     .set({});
+// };
+
+//importJSON();
 
 // error handler
 app.use(function (err, req, res, next) {

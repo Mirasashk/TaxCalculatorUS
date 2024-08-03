@@ -7,11 +7,15 @@ const taxableIncome = async (incomeModel) => {
     const doc = (await deductionsRef.get()).data();
     const deductions = Object.entries(doc.stdDeduction);
 
-    [deductionAmount] = deductions.map(([key, value]) => {
-      if (key === incomeModel.filingStatus) {
-        return value;
-      }
-    });
+    deductionAmount = deductions
+      .map(([key, value]) => {
+        if (key === incomeModel.filingStatus) {
+          return value;
+        }
+      })
+      .filter((value) => value !== undefined)[0];
+
+    console.log(deductionAmount);
   } else {
     deductionAmount = incomeModel.itemizedDeduction;
   }
