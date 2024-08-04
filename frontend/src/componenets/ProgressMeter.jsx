@@ -33,6 +33,8 @@ const ProgressMeter = ({ step }) => {
               width: 300,
               '& .Mui-active': { boxShadow: 'none' },
               '& .Mui-disabled': { color: '#3b82f6' },
+              '& .MuiSlider-rail': { color: '#3b82f6' },
+              '& .MuiSlider-track': { color: '#3b82f6' },
             }}>
             <Slider
               aria-label='Custom marks'

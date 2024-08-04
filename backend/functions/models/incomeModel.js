@@ -5,6 +5,7 @@ class IncomeModel {
     netIncome,
     fedTaxes,
     stateTaxes,
+    effectiveTaxRate,
     stdDeduction,
     itemizedDeduction,
     incomeType,
@@ -13,13 +14,15 @@ class IncomeModel {
     filingStatus,
     hasDependents,
     dependents,
-    dependentsU18
+    dependentsU18,
+    dependentTaxCredit
   ) {
     this.income = income;
     this.taxableIncome = taxableIncome;
     this.netIncome = netIncome;
     this.fedTaxes = fedTaxes;
     this.stateTaxes = stateTaxes;
+    this.effectiveTaxRate = effectiveTaxRate;
     this.stdDeduction = stdDeduction;
     this.itemizedDeduction = itemizedDeduction;
     this.incomeType = incomeType;
@@ -29,6 +32,7 @@ class IncomeModel {
     this.hasDependents = hasDependents;
     this.dependents = dependents;
     this.dependentsU18 = dependentsU18;
+    this.dependentTaxCredit = dependentTaxCredit;
   }
 
   setData(data) {
@@ -37,6 +41,7 @@ class IncomeModel {
     this.netIncome = 0;
     this.fedTaxes = 0;
     this.stateTaxes = 0;
+    this.effectiveTaxRate = 0;
     this.stdDeduction = data.stdDeduction;
     this.itemizedDeduction = data.itemizedDeduction;
     this.incomeType = data.incomeType;
@@ -46,6 +51,7 @@ class IncomeModel {
     this.hasDependents = data.hasDependents;
     this.dependents = data.dependents;
     this.dependentsU18 = data.dependentsU18;
+    this.dependentTaxCredit = 0;
   }
 }
 

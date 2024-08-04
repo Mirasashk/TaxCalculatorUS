@@ -1,81 +1,100 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaDollarSign } from 'react-icons/fa6';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import states from 'states-us';
+import axios from 'axios';
 
 const InteractiveForm = ({ step, setStep }) => {
-  const [incomeType, setIncomeType] = useState('Gross');
-  const [incomePeriod, setIncomePeriod] = useState('Anually');
-  const [stdDeduction, setStdDeduction] = useState(true);
-  const [dependents, setDependents] = useState(0);
-  const [dependentsU18, setDependentsU18] = useState(0);
-  const [hasDependents, setHasDependents] = useState(false);
-  const [filingStatus, setFilingStatus] = useState('MarriedFilingJointly');
+  const [isSubmit, setIsSubmit] = useState(false);
+  const modifiedStates = states
+    .map((state) => {
+      if (state.territory === false) {
+        return state.name;
+      }
+    })
+    .filter((state) => state !== undefined);
+
+  useEffect(() => {
+    if (isSubmit) {
+      handleSubmit();
+    }
+  }, [isSubmit]);
 
   const [formData, setFormData] = useState({
     income: '',
-    gross: true, // true for gross, false for net
+    stdDeduction: true, // true for standard, false for itemized
+    itemizedDeduction: '',
+    incomeType: 'gross', // true for gross, false for net
+    incomePeriod: 'anually',
     state: '',
-    kids: 0,
-    dependants: 0,
-    deductions: true, // true for standard, false for itemized
-    dectionAmount: '',
-    tax: 0,
+    filingStatus: 'marriedFilingJointly',
+    hasDependents: false,
+    dependents: 0,
+    dependentsU18: 0,
   });
 
   const handleNext = () => {
     setStep(step + 1);
-    console.log(step);
   };
 
   const handleBack = () => {
     setStep(step - 1);
-    console.log(step);
   };
 
   const handleChange = (e) => {
+    console.log(e.target.name, e.target.value);
+    console.log(e.target);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const modifyFormData = () => {
+    let incomeMult = parseInt(String(formData.income).replace(/,/g, ''));
+
+    if (formData.incomePeriod === 'semi-monthly') {
+      incomeMult = incomeMult * 24;
+    } else if (formData.incomePeriod === 'bi-weekly') {
+      incomeMult = incomeMult * 26;
+    }
+    setFormData({
+      ...formData,
+      income: incomeMult,
+      state: formData.state.toLowerCase(),
+      itemizedDeduction: parseInt(
+        String(formData.itemizedDeduction).replace(/,/g, '')
+      ),
+    });
+
+    console.log(formData.income);
+    setIsSubmit(true);
+  };
+
+  const handleSubmit = () => {
+    console.log('This processes firtst');
+    axios.post('http://localhost:5000/calculations', formData).then((res) => {
+      console.log(res.data);
+    });
+    //navigate to results page
     console.log(formData);
   };
 
-  const onPeriodOptionChange = (e) => {
-    setIncomePeriod(e.target.value);
-    handleChange(e);
-  };
-  const onTypeOptionChange = (e) => {
-    setIncomeType(e.target.value);
-    handleChange(e);
-  };
-
   const onStdDeductionChange = (e) => {
-    setStdDeduction(!stdDeduction);
-    handleChange(e);
+    if (e.target.value === 'true') {
+      setFormData({ ...formData, stdDeduction: true });
+    } else {
+      setFormData({ ...formData, stdDeduction: false });
+    }
+    //handleChange(e);
   };
 
   const onHasDependentsChange = (e) => {
-    setHasDependents(!hasDependents);
-    handleChange(e);
-  };
-
-  const onDependentsChange = (e) => {
-    setDependents(e.target.value);
-    handleChange(e);
-  };
-
-  const onDependentsU18Change = (e) => {
-    setDependentsU18(e.target.value);
-    handleChange(e);
-  };
-
-  const onFilingStatusChange = (e) => {
-    setFilingStatus(e.target.value);
-    handleChange(e);
+    console.log(e.target);
+    if (e.target.value === 'true') {
+      setFormData({ ...formData, hasDependents: true });
+    } else {
+      setFormData({ ...formData, hasDependents: false });
+    }
   };
 
   const FormatIncomeField = (e) => {
@@ -104,15 +123,15 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='option'
-              id='Anually'
-              value='Anually'
+              name='incomePeriod'
+              id='anually'
+              value='anually'
               className='peer hidden'
-              checked={incomePeriod === 'Anually'}
-              onChange={onPeriodOptionChange}
+              checked={formData.incomePeriod === 'anually'}
+              onChange={handleChange}
             />
             <label
-              htmlFor='Anually'
+              htmlFor='anually'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Anually
             </label>
@@ -121,15 +140,15 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='option'
-              id='Semi-Monthly'
-              value='Semi-Monthly'
+              name='incomePeriod'
+              id='semi-monthly'
+              value='semi-monthly'
               className='peer hidden'
-              checked={incomePeriod === 'Semi-Monthly'}
-              onChange={onPeriodOptionChange}
+              checked={formData.incomePeriod === 'semi-monthly'}
+              onChange={handleChange}
             />
             <label
-              htmlFor='Semi-Monthly'
+              htmlFor='semi-monthly'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Semi-Monthly
             </label>
@@ -138,15 +157,15 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='option'
-              id='Bi-Weekly'
-              value='Bi-Weekly'
+              name='incomePeriod'
+              id='bi-weekly'
+              value='bi-weekly'
               className='peer hidden'
-              checked={incomePeriod === 'Bi-Weekly'}
-              onChange={onPeriodOptionChange}
+              checked={formData.incomePeriod == 'bi-weekly'}
+              onChange={handleChange}
             />
             <label
-              htmlFor='Bi-Weekly'
+              htmlFor='bi-weekly'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Bi-Weekly
             </label>
@@ -156,15 +175,15 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='grossOrNet'
-              id='Gross'
-              value='Gross'
+              name='incomeType'
+              id='gross'
+              value='gross'
               className='peer hidden'
-              checked={incomeType === 'Gross'}
-              onChange={onTypeOptionChange}
+              checked={formData.incomeType === 'gross'}
+              onChange={handleChange}
             />
             <label
-              htmlFor='Gross'
+              htmlFor='gross'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Gross
             </label>
@@ -173,15 +192,15 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='grossOrNet'
-              id='Net'
-              value='Net'
+              name='incomeType'
+              id='net'
+              value='net'
               className='peer hidden'
-              checked={incomeType === 'Net'}
-              onChange={onTypeOptionChange}
+              checked={formData.incomeType === 'net'}
+              onChange={handleChange}
             />
             <label
-              htmlFor='Net'
+              htmlFor='net'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Net
             </label>
@@ -204,8 +223,15 @@ const InteractiveForm = ({ step, setStep }) => {
       </div>
       <div className='grid justify-center items-center mb-6'>
         <button
-          className='grid items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
-          onClick={handleNext}>
+          disabled={formData.income === ''}
+          className='grid disabled:bg-slate-600 items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
+          onClick={(e) => {
+            setFormData({
+              ...formData,
+              income: parseInt(String(formData.income).replace(/,/g, '')),
+            });
+            handleNext(e);
+          }}>
           Next
         </button>
       </div>
@@ -220,11 +246,18 @@ const InteractiveForm = ({ step, setStep }) => {
         </div>
         <Autocomplete
           disablePortal
+          autoComplete
+          disableClearable
+          name='state'
+          value={formData.state ? formData.state : null}
           id='combo-box-demo'
-          getOptionLabel={(option) => option.name}
-          options={states}
-          onChange={(e, value) => {
-            setFormData({ ...formData, state: value.abbreviation });
+          getOptionLabel={(option) => option}
+          options={modifiedStates}
+          isOptionEqualToValue={(option, value) => {
+            return option === value;
+          }}
+          onChange={(event, value) => {
+            setFormData({ ...formData, state: value });
           }}
           sx={{
             width: 300,
@@ -232,12 +265,13 @@ const InteractiveForm = ({ step, setStep }) => {
             backgroundColor: 'white',
             borderRadius: '1rem',
             border: 'none',
-            '& fieldset': { border: 'none', helperText: 'none' },
+            '& fieldset': { border: 'none' },
             '#combo-box-demo-label': { visibility: 'hidden' },
           }}
           renderInput={(params) => (
             <TextField
               {...params}
+              placeholder='Select a state'
               label='States'
               sx={{ border: 'none', borderRadius: '2rem' }}
             />
@@ -251,7 +285,8 @@ const InteractiveForm = ({ step, setStep }) => {
           Back
         </button>
         <button
-          className='grid items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
+          disabled={formData.state === ''}
+          className='grid items-end justify-center disabled:bg-slate-600 bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
           onClick={handleNext}>
           Next
         </button>
@@ -269,13 +304,13 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='MarriedFilingJointly'
-                value='MarriedFilingJointly'
+                id='marriedFilingJointly'
+                value='marriedFilingJointly'
                 className='peer w-5 h-5 mr-4 '
-                checked={filingStatus === 'MarriedFilingJointly'}
-                onChange={onFilingStatusChange}
+                checked={formData.filingStatus === 'marriedFilingJointly'}
+                onChange={handleChange}
               />
-              <label htmlFor='MarriedFilingJointly' className='text-xl'>
+              <label htmlFor='marriedFilingJointly' className='text-xl'>
                 Married Filing Jointly
               </label>
             </div>
@@ -284,13 +319,13 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='MarriedFilingSeparately'
-                value='MarriedFilingSeparately'
+                id='marriedFilingSeparately'
+                value='marriedFilingSeparately'
                 className='peer w-5 h-5 mr-4 '
-                checked={filingStatus === 'MarriedFilingSeparately'}
-                onChange={onFilingStatusChange}
+                checked={formData.filingStatus === 'marriedFilingSeparately'}
+                onChange={handleChange}
               />
-              <label htmlFor='MarriedFilingSeparately' className='text-xl'>
+              <label htmlFor='marriedFilingSeparately' className='text-xl'>
                 Married Filing Separately
               </label>
             </div>
@@ -298,13 +333,13 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='Single'
-                value='Single'
+                id='single'
+                value='single'
                 className='peer w-5 h-5 mr-4 '
-                checked={filingStatus === 'Single'}
-                onChange={onFilingStatusChange}
+                checked={formData.filingStatus === 'single'}
+                onChange={handleChange}
               />
-              <label htmlFor='Single' className='text-xl'>
+              <label htmlFor='single' className='text-xl'>
                 Single
               </label>
             </div>
@@ -312,33 +347,18 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='HeadOfHousehold'
-                value='HeadOfHousehold'
+                id='headOfHousehold'
+                value='headOfHousehold'
                 className='peer w-5 h-5 mr-4 '
-                checked={filingStatus === 'HeadOfHousehold'}
-                onChange={onFilingStatusChange}
+                checked={formData.filingStatus === 'headOfHousehold'}
+                onChange={handleChange}
               />
-              <label htmlFor='HeadOfHousehold' className='text-xl'>
+              <label htmlFor='headOfHousehold' className='text-xl'>
                 Head Of Household
               </label>
             </div>
           </div>
         </div>
-        {!stdDeduction ? (
-          <div className='w-[12rem] flex justify-start items-center relative '>
-            <FaDollarSign
-              className='absolute mr-2 w-10 text-slate-600'
-              alt='Search Icon'
-            />
-            <input
-              name='itemizedDeduction'
-              placeholder='Itemized Decutions'
-              value={formData.deductionAmount}
-              className='border border-gray-400   rounded-lg py-3 pl-8 w-full'
-              onChange={FormatDeductionField}
-            />
-          </div>
-        ) : null}
       </div>
       <div className='flex justify-center items-center space-x-4 mb-6'>
         <button
@@ -366,14 +386,14 @@ const InteractiveForm = ({ step, setStep }) => {
             <input
               type='radio'
               name='stdDeduction'
-              id='Standard'
-              value='Standard'
+              id='stdDeduction'
+              value={true}
               className='peer hidden'
-              checked={stdDeduction}
+              checked={formData.stdDeduction}
               onChange={onStdDeductionChange}
             />
             <label
-              htmlFor='Standard'
+              htmlFor='stdDeduction'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Standard
             </label>
@@ -383,20 +403,20 @@ const InteractiveForm = ({ step, setStep }) => {
             <input
               type='radio'
               name='stdDeduction'
-              id='Itemized'
-              value='Itemized'
+              id='itemized'
+              value={false}
               className='peer hidden'
-              checked={!stdDeduction}
+              checked={!formData.stdDeduction}
               onChange={onStdDeductionChange}
             />
             <label
-              htmlFor='Itemized'
+              htmlFor='itemized'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Itemized
             </label>
           </div>
         </div>
-        {!stdDeduction ? (
+        {!formData.stdDeduction ? (
           <div className='w-[12rem] flex justify-start items-center relative '>
             <FaDollarSign
               className='absolute mr-2 w-10 text-slate-600'
@@ -404,7 +424,7 @@ const InteractiveForm = ({ step, setStep }) => {
             />
             <input
               name='itemizedDeduction'
-              placeholder='Itemized Decutions'
+              placeholder='Itemized Deductions'
               value={formData.deductionAmount}
               className='border border-gray-400   rounded-lg py-3 pl-8 w-full'
               onChange={FormatDeductionField}
@@ -437,18 +457,15 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='dependents'
-              id='NoDependents'
-              value={hasDependents}
+              name='hasDependents'
+              id='noDependents'
+              value={false}
               className='peer hidden'
-              checked={hasDependents === false}
-              onChange={(e) => {
-                onHasDependentsChange(e);
-                setDependents(0);
-              }}
+              checked={formData.hasDependents === false}
+              onChange={onHasDependentsChange}
             />
             <label
-              htmlFor='NoDependents'
+              htmlFor='noDependents'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               No Dependents
             </label>
@@ -457,11 +474,11 @@ const InteractiveForm = ({ step, setStep }) => {
           <div>
             <input
               type='radio'
-              name='dependents'
+              name='hasDependents'
               id='moreThanZero'
-              value={hasDependents}
+              value={true}
               className='peer hidden'
-              checked={hasDependents == true}
+              checked={formData.hasDependents == true}
               onChange={onHasDependentsChange}
             />
             <label
@@ -471,7 +488,7 @@ const InteractiveForm = ({ step, setStep }) => {
             </label>
           </div>
         </div>
-        {hasDependents ? (
+        {formData.hasDependents ? (
           <>
             <div className='w-[20rem] grid justify-center items-center '>
               <label htmlFor='numberOfDependents' className='italic'>
@@ -479,12 +496,12 @@ const InteractiveForm = ({ step, setStep }) => {
               </label>
               <div className='flex justify-center'>
                 <input
-                  name='numberOfDependents'
+                  name='dependents'
                   type='number'
                   placeholder='Number of Dependents'
-                  value={dependents}
+                  value={formData.dependents}
                   className='border border-gray-400 w-[10rem] rounded-lg py-3 pl-8 '
-                  onChange={onDependentsChange}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -494,12 +511,12 @@ const InteractiveForm = ({ step, setStep }) => {
               </label>
               <div className='flex justify-center'>
                 <input
-                  name='numberOfDependentsU18'
+                  name='dependentsU18'
                   type='number'
                   placeholder='Number of Dependents under 18'
-                  value={dependentsU18}
+                  value={formData.dependentsU18}
                   className='border border-gray-400 rounded-lg py-3 pl-8 w-[10rem]'
-                  onChange={onDependentsU18Change}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -514,8 +531,8 @@ const InteractiveForm = ({ step, setStep }) => {
         </button>
         <button
           className='grid items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
-          onClick={handleNext}>
-          Next
+          onClick={modifyFormData}>
+          Submit
         </button>
       </div>
     </>
