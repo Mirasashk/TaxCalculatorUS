@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from 'react';
 import InteractiveForm from './InteractiveForm';
 import ProgressMeter from './ProgressMeter';

@@ -11,7 +11,10 @@ const stateTaxes = async (incomeModel) => {
   if (!doc.exists) {
     console.log('No such document!');
   } else {
-    const filingStatus = incomeModel.filingStatus;
+    const filingStatus =
+      incomeModel.filingStatus === 'single' || 'marriedSeperate'
+        ? 'single'
+        : 'married';
     const deductions = Object.entries(doc.data().deduction);
     const deductionAmount = deductions
       .map(([key, value]) => {

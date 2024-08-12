@@ -1,12 +1,18 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import ProfileContext from '../contexts/ProfileContext';
 import { FaDollarSign } from 'react-icons/fa6';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import states from 'states-us';
 import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const InteractiveForm = ({ step, setStep }) => {
+  // eslint-disable-next-line no-unused-vars
+  const [resultModel, setResultModel] = useContext(ProfileContext);
+  const [loading, setLoading] = useState(false);
   const [isSubmit, setIsSubmit] = useState(false);
   const modifiedStates = states
     .map((state) => {
@@ -19,17 +25,18 @@ const InteractiveForm = ({ step, setStep }) => {
   useEffect(() => {
     if (isSubmit) {
       handleSubmit();
+      setLoading(true);
     }
   }, [isSubmit]);
 
   const [formData, setFormData] = useState({
     income: '',
     stdDeduction: true, // true for standard, false for itemized
-    itemizedDeduction: '',
+    deductionAmount: '',
     incomeType: 'gross', // true for gross, false for net
     incomePeriod: 'anually',
     state: '',
-    filingStatus: 'marriedFilingJointly',
+    filingStatus: 'marriedJointly',
     hasDependents: false,
     dependents: 0,
     dependentsU18: 0,
@@ -61,8 +68,8 @@ const InteractiveForm = ({ step, setStep }) => {
       ...formData,
       income: incomeMult,
       state: formData.state.toLowerCase(),
-      itemizedDeduction: parseInt(
-        String(formData.itemizedDeduction).replace(/,/g, '')
+      deductionAmount: parseInt(
+        String(formData.deductionAmount).replace(/,/g, '')
       ),
     });
 
@@ -74,6 +81,7 @@ const InteractiveForm = ({ step, setStep }) => {
     console.log('This processes firtst');
     axios.post('http://localhost:5000/calculations', formData).then((res) => {
       console.log(res.data);
+      setResultModel(res.data);
     });
     //navigate to results page
     console.log(formData);
@@ -168,41 +176,6 @@ const InteractiveForm = ({ step, setStep }) => {
               htmlFor='bi-weekly'
               className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
               Bi-Weekly
-            </label>
-          </div>
-        </div>
-        <div className='grid w-[12rem] grid-cols-2 text-sm gap-1 rounded-3xl bg-gray-200 p-0'>
-          <div>
-            <input
-              type='radio'
-              name='incomeType'
-              id='gross'
-              value='gross'
-              className='peer hidden'
-              checked={formData.incomeType === 'gross'}
-              onChange={handleChange}
-            />
-            <label
-              htmlFor='gross'
-              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
-              Gross
-            </label>
-          </div>
-
-          <div>
-            <input
-              type='radio'
-              name='incomeType'
-              id='net'
-              value='net'
-              className='peer hidden'
-              checked={formData.incomeType === 'net'}
-              onChange={handleChange}
-            />
-            <label
-              htmlFor='net'
-              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
-              Net
             </label>
           </div>
         </div>
@@ -304,13 +277,13 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='marriedFilingJointly'
-                value='marriedFilingJointly'
+                id='marriedJointly'
+                value='marriedJointly'
                 className='peer w-5 h-5 mr-4 '
-                checked={formData.filingStatus === 'marriedFilingJointly'}
+                checked={formData.filingStatus === 'marriedJointly'}
                 onChange={handleChange}
               />
-              <label htmlFor='marriedFilingJointly' className='text-xl'>
+              <label htmlFor='marriedJointly' className='text-xl'>
                 Married Filing Jointly
               </label>
             </div>
@@ -319,13 +292,13 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='marriedFilingSeparately'
-                value='marriedFilingSeparately'
+                id='marriedSeperate'
+                value='marriedSeperate'
                 className='peer w-5 h-5 mr-4 '
-                checked={formData.filingStatus === 'marriedFilingSeparately'}
+                checked={formData.filingStatus === 'marriedSeperate'}
                 onChange={handleChange}
               />
-              <label htmlFor='marriedFilingSeparately' className='text-xl'>
+              <label htmlFor='marriedSeperate' className='text-xl'>
                 Married Filing Separately
               </label>
             </div>
@@ -347,13 +320,13 @@ const InteractiveForm = ({ step, setStep }) => {
               <input
                 type='radio'
                 name='filingStatus'
-                id='headOfHousehold'
-                value='headOfHousehold'
+                id='headOfHouse'
+                value='headOfHouse'
                 className='peer w-5 h-5 mr-4 '
-                checked={formData.filingStatus === 'headOfHousehold'}
+                checked={formData.filingStatus === 'headOfHouse'}
                 onChange={handleChange}
               />
-              <label htmlFor='headOfHousehold' className='text-xl'>
+              <label htmlFor='headOfHouse' className='text-xl'>
                 Head Of Household
               </label>
             </div>
@@ -439,7 +412,10 @@ const InteractiveForm = ({ step, setStep }) => {
           Back
         </button>
         <button
-          className='grid items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
+          disabled={
+            formData.stdDeduction === false && formData.deductionAmount === ''
+          }
+          className='grid items-end justify-center disabled:bg-slate-500 bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
           onClick={handleNext}>
           Next
         </button>
@@ -498,6 +474,7 @@ const InteractiveForm = ({ step, setStep }) => {
                 <input
                   name='dependents'
                   type='number'
+                  min={0}
                   placeholder='Number of Dependents'
                   value={formData.dependents}
                   className='border border-gray-400 w-[10rem] rounded-lg py-3 pl-8 '
@@ -507,12 +484,14 @@ const InteractiveForm = ({ step, setStep }) => {
             </div>
             <div className='w-[20rem] grid justify-center items-center '>
               <label htmlFor='numberOfDependentsU18' className='italic'>
-                Enter the number of Dependents under 18:
+                Enter the number of Dependents under 16:
               </label>
               <div className='flex justify-center'>
                 <input
                   name='dependentsU18'
                   type='number'
+                  min={0}
+                  max={formData.dependents}
                   placeholder='Number of Dependents under 18'
                   value={formData.dependentsU18}
                   className='border border-gray-400 rounded-lg py-3 pl-8 w-[10rem]'
@@ -539,19 +518,27 @@ const InteractiveForm = ({ step, setStep }) => {
   );
 
   return (
-    <div className='grid justify-center pt-4'>
-      {step === 0
-        ? renderStep0
-        : step === 1
-        ? renderStep1
-        : step === 2
-        ? renderStep2
-        : step === 3
-        ? renderStep3
-        : step === 4
-        ? renderStep4
-        : 'Results'}
-    </div>
+    <>
+      {!loading ? (
+        <div className='grid justify-center pt-4'>
+          {step === 0
+            ? renderStep0
+            : step === 1
+            ? renderStep1
+            : step === 2
+            ? renderStep2
+            : step === 3
+            ? renderStep3
+            : step === 4
+            ? renderStep4
+            : 'Results'}
+        </div>
+      ) : (
+        <div className='flex justify-center items-center h-[23rem]'>
+          <CircularProgress />
+        </div>
+      )}
+    </>
   );
 };
 

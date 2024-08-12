@@ -12,13 +12,13 @@ const ProgressMeter = ({ step }) => {
     if (step === 0) {
       setValue(0);
     } else if (step === 1) {
-      setValue(20);
+      setValue(25);
     } else if (step === 2) {
-      setValue(40);
+      setValue(50);
     } else if (step === 3) {
-      setValue(60);
+      setValue(75);
     } else if (step === 4) {
-      setValue(80);
+      setValue(100);
     } else if (step === 5) {
       setProgressActive(false);
     }

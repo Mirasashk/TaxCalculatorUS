@@ -7,7 +7,7 @@ class IncomeModel {
     stateTaxes,
     effectiveTaxRate,
     stdDeduction,
-    itemizedDeduction,
+    deductionAmount,
     incomeType,
     incomePeriod,
     state,
@@ -24,7 +24,7 @@ class IncomeModel {
     this.stateTaxes = stateTaxes;
     this.effectiveTaxRate = effectiveTaxRate;
     this.stdDeduction = stdDeduction;
-    this.itemizedDeduction = itemizedDeduction;
+    this.deductionAmount = deductionAmount;
     this.incomeType = incomeType;
     this.incomePeriod = incomePeriod;
     this.state = state;
@@ -43,7 +43,7 @@ class IncomeModel {
     this.stateTaxes = 0;
     this.effectiveTaxRate = 0;
     this.stdDeduction = data.stdDeduction;
-    this.itemizedDeduction = data.itemizedDeduction;
+    this.deductionAmount = data.deductionAmount;
     this.incomeType = data.incomeType;
     this.incomePeriod = data.incomePeriod;
     this.state = data.state;

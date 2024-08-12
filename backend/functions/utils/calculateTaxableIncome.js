@@ -17,8 +17,10 @@ const taxableIncome = async (incomeModel) => {
 
     console.log(deductionAmount);
   } else {
-    deductionAmount = incomeModel.itemizedDeduction;
+    console.log(incomeModel);
+    deductionAmount = incomeModel.deductionAmount;
   }
+
   return incomeModel.income - deductionAmount;
 };
 
