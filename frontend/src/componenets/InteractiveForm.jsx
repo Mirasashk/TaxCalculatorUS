@@ -79,10 +79,12 @@ const InteractiveForm = ({ step, setStep }) => {
     //dev http://localhost:5000/calculations
     //prod https://taxcalculatorus-api.web.app/calculations
     console.log('This processes firtst');
-    axios.post('http://localhost:5000/calculations', formData).then((res) => {
-      console.log(res.data);
-      setResultModel(res.data);
-    });
+    axios
+      .post('https://taxcalculatorus-api.web.app/calculations', formData)
+      .then((res) => {
+        console.log(res.data);
+        setResultModel(res.data);
+      });
     //navigate to results page
     console.log(formData);
   };

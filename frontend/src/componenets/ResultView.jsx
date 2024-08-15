@@ -47,7 +47,7 @@ const ResultView = () => {
     //prod https://taxcalculatorus-api.web.app/calculations
     console.log('This processes for recalculation');
     axios
-      .post('http://localhost:5000/calculations', newCalculation)
+      .post('https://taxcalculatorus-api.web.app/calculations', newCalculation)
       .then((res) => {
         console.log(res.data);
         setResultModel(res.data);
@@ -454,7 +454,7 @@ const ResultView = () => {
               </div>
               {results}
               <div className='flex justify-center '>
-                <div className='flex justify-center h-[20rem] w-[20rem]'>
+                <div className='flex justify-center h-[18rem] w-[10rem]'>
                   <PieChart
                     slotProps={{
                       legend: {
