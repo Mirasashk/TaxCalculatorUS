@@ -1,9 +1,11 @@
 /* eslint-disable react/prop-types */
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import ProfileContext from '../contexts/ProfileContext';
 import { Divider } from '@mui/material';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { FaDollarSign } from 'react-icons/fa';
+import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import NumberInput from './NumberInput';
 import {
   OutlinedInput,
   Autocomplete,
@@ -14,18 +16,47 @@ import {
 } from '@mui/material';
 import states from 'states-us';
 
+const modifiedStates = states
+  .map((state) => {
+    if (state.territory === false) {
+      return state.name;
+    }
+  })
+  .filter((state) => state !== undefined);
+
 const ResultView = () => {
   // eslint-disable-next-line no-unused-vars
   const [resultModel, setResultModel] = useContext(ProfileContext);
   const [newCalculation, setNewCalculation] = useState(resultModel.incomeModel);
+  const [isSubmit, setIsSubmit] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const modifiedStates = states
-    .map((state) => {
-      if (state.territory === false) {
-        return state.name;
-      }
-    })
-    .filter((state) => state !== undefined);
+  useEffect(() => {
+    if (isSubmit) {
+      handleSubmit();
+      setLoading(true);
+    }
+  }, [isSubmit]);
+
+  useEffect(() => {
+    setNewCalculation(resultModel.incomeModel);
+  }, [resultModel]);
+
+  const handleSubmit = () => {
+    //dev http://localhost:5000/calculations
+    //prod https://taxcalculatorus-api.web.app/calculations
+    console.log('This processes for recalculation');
+    axios
+      .post('http://localhost:5000/calculations', newCalculation)
+      .then((res) => {
+        console.log(res.data);
+        setResultModel(res.data);
+        setLoading(false);
+        setIsSubmit(false);
+      });
+    // navigate to results page
+    console.log(resultModel);
+  };
 
   const handleUpdate = (e) => {
     console.log('we are editing', e.target.name);
@@ -47,21 +78,38 @@ const ResultView = () => {
     });
   };
 
-  //   resultModel.incomeModel.income
-  //   .toFixed(2)
-  //   .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  const modifyFormData = (e) => {
+    e.preventDefault();
+    let incomeMult = parseInt(String(newCalculation.income).replace(/,/g, ''));
+
+    if (newCalculation.incomePeriod === 'semi-monthly') {
+      incomeMult = incomeMult * 24;
+    } else if (newCalculation.incomePeriod === 'bi-weekly') {
+      incomeMult = incomeMult * 26;
+    }
+    setNewCalculation({
+      ...newCalculation,
+      income: incomeMult,
+      state: newCalculation.state.toLowerCase(),
+      incomePeriod: 'anually',
+      deductionAmount: parseInt(
+        String(newCalculation.deductionAmount).replace(/,/g, '')
+      ),
+    });
+    setIsSubmit(true);
+  };
 
   const inputs = (
-    <div className='grid grid-flow-row grid-cols-2 '>
-      <div className='grid col-span-2 grid-cols-2 pr-2 space-y-2'>
-        <div className='flex col-span-1 items-center'>
+    <div className='grid grid-flow-row grid-cols-12 '>
+      <div className='grid col-span-12 grid-cols-12 pl-3 desktop:pl-8 space-y-4'>
+        <div className='flex col-span-5 items-center pt-4'>
           <label htmlFor='income'>Income:</label>
         </div>
-        <div className='col-span-1'>
+        <div className='col-span-7'>
           <OutlinedInput
             name='income'
             sx={{
-              width: '12rem',
+              width: '10rem',
               backgroundColor: 'white',
               height: '3rem',
             }}
@@ -72,16 +120,16 @@ const ResultView = () => {
           />
         </div>
 
-        <div className='flex col-span-1 items-center'>
+        <div className='flex col-span-5 items-center'>
           <label htmlFor='income period'>Income Period:</label>
         </div>
-        <div className='flex col-span-1'>
+        <div className='flex col-span-7'>
           <div>
             <Select
               value={newCalculation.incomePeriod}
               onChange={handleUpdate}
               sx={{
-                width: '12rem',
+                width: '10rem',
                 backgroundColor: 'white',
                 height: '3rem',
               }}
@@ -96,10 +144,10 @@ const ResultView = () => {
           </div>
         </div>
 
-        <div className='flex col-span-1 items-center'>
+        <div className='flex col-span-5 items-center'>
           <label htmlFor='state'>State:</label>
         </div>
-        <div className='flex col-span-1'>
+        <div className='flex col-span-7'>
           <div className='w-[12rem]'>
             <Autocomplete
               disablePortal
@@ -123,19 +171,17 @@ const ResultView = () => {
                 });
               }}
               sx={{
-                width: '12rem',
+                width: '10rem',
 
                 backgroundColor: 'white',
                 borderRadius: 1,
                 border: 'none',
-                '& fieldset': { border: 'none' },
-                '#combo-box-demo-label': { visibility: 'hidden' },
               }}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  placeholder='Select a state'
-                  label='States'
+                  placeholder='State'
+                  label='State'
                   sx={{ border: 'none', borderRadius: '2rem' }}
                 />
               )}
@@ -144,10 +190,10 @@ const ResultView = () => {
           </div>
         </div>
 
-        <div className='flex col-span-1 items-center'>
+        <div className='flex col-span-5 items-center'>
           <label htmlFor='deduction'>Deduction:</label>
         </div>
-        <div className='grid w-[12rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-gray-200 p-0'>
+        <div className='grid w-[10rem] grid-cols-2 col-span-7 text-sm gap-1 mb-4 rounded-3xl bg-slate-300 p-0'>
           <div>
             <input
               type='radio'
@@ -188,30 +234,37 @@ const ResultView = () => {
         </div>
         {!newCalculation.stdDeduction ? (
           <>
-            <div className='flex col-span-1 items-center'>
+            <div className='flex col-span-5 items-center'>
               <label htmlFor='deduction'>Deduction Amount:</label>
             </div>
-            <div className='w-[12rem] flex col-span-1 justify-start items-center relative '>
-              <FaDollarSign
-                className='absolute mr-2 w-10 text-slate-600'
-                alt='Search Icon'
-              />
-              <input
+            <div className='col-span-7'>
+              <OutlinedInput
                 name='itemizedDeduction'
-                placeholder='Deduction Amount'
-                value={newCalculation.deductionAmount}
-                className='border border-gray-400   rounded-lg py-3 pl-8 w-full'
+                sx={{
+                  width: '10rem',
+                  backgroundColor: 'white',
+                  height: '3rem',
+                }}
+                id='standard-adornment-amount'
                 onChange={FormatDeductionField}
+                value={
+                  newCalculation.deductionAmount == null
+                    ? 0
+                    : newCalculation.deductionAmount
+                }
+                startAdornment={
+                  <InputAdornment position='start'>$</InputAdornment>
+                }
               />
             </div>
           </>
         ) : null}
 
-        <div className='flex col-span-1 items-center'>
+        <div className='flex col-span-5 items-center'>
           <label htmlFor='deduction'>Dependents:</label>
         </div>
 
-        <div className='grid w-[12rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-gray-200 p-0'>
+        <div className='grid w-[10rem] col-span-7 grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-slate-300'>
           <div>
             <input
               type='radio'
@@ -253,44 +306,41 @@ const ResultView = () => {
 
         {newCalculation.hasDependents ? (
           <>
-            <div className='flex col-span-1 items-center'>
+            <div className='flex col-span-5 items-center'>
               <label htmlFor='deduction'># of Dependents:</label>
             </div>
-            <div className='w-[12rem] grid justify-center items-center '>
+            <div className=' col-span-7 grid justify-center items-center '>
               <div className='flex justify-center'>
-                <input
+                <NumberInput
                   name='dependents'
-                  type='number'
+                  aria-label='Quantity Input'
                   min={0}
-                  placeholder='Number of Dependents'
+                  max={99}
                   value={newCalculation.dependents}
-                  className='border border-gray-400 w-[12rem] rounded-lg py-3 pl-8 '
-                  onChange={(e) => {
+                  onChange={(event, newValue) => {
                     setNewCalculation({
                       ...newCalculation,
-                      dependents: e.target.value,
+                      dependents: newValue,
                     });
                   }}
                 />
               </div>
             </div>
 
-            <div className='flex col-span-1 items-center'>
+            <div className='flex col-span-5 items-center'>
               <label htmlFor='deduction'>Dependents under 17:</label>
             </div>
-            <div className='w-[12rem] grid justify-center items-center '>
-              <div className='flex justify-center'>
-                <input
-                  name='dependents'
-                  type='number'
+            <div className='col-span-7 grid justify-center items-center '>
+              <div className='flex '>
+                <NumberInput
+                  name='dependentsU18'
                   min={0}
-                  placeholder='Number of Dependents'
-                  value={newCalculation.dependents}
-                  className='border border-gray-400 w-[12rem] rounded-lg py-3 pl-8 '
-                  onChange={(e) => {
+                  max={newCalculation.dependents}
+                  value={newCalculation.dependentsU18}
+                  onChange={(event, newValue) => {
                     setNewCalculation({
                       ...newCalculation,
-                      dependents: e.target.value,
+                      dependentsU18: newValue,
                     });
                   }}
                 />
@@ -299,12 +349,10 @@ const ResultView = () => {
           </>
         ) : null}
 
-        <div className='flex col-span-2 justify-center items-center pt-4'>
+        <div className='flex col-span-12 justify-center items-center pt-4'>
           <button
             className='w-40 h-12 bg-[#254081] rounded-3xl font-semibold text-white'
-            onClick={() => {
-              setResultModel({ incomeModel: newCalculation });
-            }}>
+            onClick={modifyFormData}>
             Re-Calculate
           </button>
         </div>
@@ -315,7 +363,7 @@ const ResultView = () => {
   const results = (
     <div className='grid grid-flow-row col-span-4 pt-10'>
       <div className='grid grid-flow-row grid-cols-8 '>
-        <div className='flex flex-col col-span-4 pr-2 text-xl pl-10'>
+        <div className='flex flex-col col-span-5  text-xl '>
           <label htmlFor='income'>Gross Income:</label>
           <label htmlFor='deduction'>Taxable Income:</label>
           <label htmlFor='income period'>Federal Taxes:</label>
@@ -325,7 +373,7 @@ const ResultView = () => {
           <label htmlFor='deduction'>Effective Tax Rate:</label>
           <label htmlFor='dependents'>Net Income:</label>
         </div>
-        <div className='flex flex-col col-span-4 text-xl font-medium pl-2'>
+        <div className='flex flex-col col-span-3 text-xl font-medium pl-2'>
           <div>
             $
             {resultModel.incomeModel.income
@@ -349,7 +397,7 @@ const ResultView = () => {
             {resultModel.incomeModel.dependentTaxCredit
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            <p className='flex items-center pl-2 text-sm text-black'>
+            <p className='flex items-center pl-2 text-sm text-black hidden'>
               *Included in federal taxes
             </p>
           </div>
@@ -374,79 +422,112 @@ const ResultView = () => {
   );
 
   return (
-    <div className=' flex flex-col items-center h-[36rem] w-full px-8'>
-      <div className='grid grid-cols-12 w-full '>
-        <div className='flex flex-col col-span-4 w-full'>
-          <div className='grid justify-center text-2xl font-semibold pb-4'>
-            Your information
-          </div>
-          {inputs}
-        </div>
-        <div className='flex justify-center col-span-1'>
-          <Divider
-            orientation='vertical'
-            sx={{
-              width: '2px',
+    <>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <div className=' flex flex-col items-center w-full px-0'>
+          <div className='grid grid-cols-12 w-full '>
+            <div className='laptop:flex flex-col col-span-5 w-full hidden '>
+              <div className='grid justify-center text-2xl font-semibold pb-4'>
+                Your information
+              </div>
+              {inputs}
+            </div>
+            <div className='flex justify-center col-span-1 '>
+              <Divider
+                orientation='vertical'
+                sx={{
+                  width: '2px',
 
-              borderRightWidth: '1.8px',
-              borderColor: '#192841',
-              opacity: 0.5,
-            }} // Modify the thickness here
-            textAlign='center'
-          />
-        </div>
+                  borderRightWidth: '1.8px',
+                  borderColor: '#192841',
+                  opacity: 0.5,
+                }} // Modify the thickness here
+                textAlign='center'
+              />
+            </div>
 
-        <div className='flex flex-col col-span-7 w-full'>
-          <div className='grid col-span-5 justify-center text-2xl font-semibold pb-4'>
-            Tax year 2024 Breakdown
-          </div>
-          {results}
-          <div className='pt-4'>
-            <PieChart
-              series={[
-                {
-                  data: [
-                    {
-                      id: 0,
-                      value: resultModel.incomeModel.netIncome,
-                      color: '#254081',
-                      label: 'Net Income',
-                    },
-                    {
-                      id: 1,
-                      value: resultModel.incomeModel.fedTaxes,
-                      color: 'red',
-                      label: 'Federal Taxes',
-                    },
-                    {
-                      id: 2,
-                      value: resultModel.incomeModel.stateTaxes,
-                      color: 'yellow',
-                      label: 'State Taxes',
-                    },
-                  ],
-                  outerRadius: 80,
-                  innerRadius: 0,
-                  paddingAngle: 1,
-                  cornerRadius: 8,
-                  startAngle: 180,
-                  endAngle: 540,
-                  highlightScope: { faded: 'global', highlighted: 'item' },
-                  faded: {
-                    innerRadius: 30,
-                    additionalRadius: -30,
-                    color: 'gray',
-                  },
-                },
-              ]}
-              sx={{ '& .MuiPieArc-root': { strokeWidth: '0px' } }}
-              width={400}
-              height={200}
-            />
+            <div className='flex flex-col col-span-12 laptop:col-span-6 w-full tablet:px-16 laptop:px-0'>
+              <div className='grid col-span-5 justify-center text-2xl text-center font-semibold pb-4'>
+                Tax year 2024 Breakdown
+              </div>
+              {results}
+              <div className='flex justify-center '>
+                <div className='flex justify-center h-[20rem] w-[20rem]'>
+                  <PieChart
+                    slotProps={{
+                      legend: {
+                        position: { vertical: 'bottom', horizontal: 'middle' },
+                      },
+                    }}
+                    margin={{
+                      left: 50,
+                      right: 50,
+                      top: 0,
+                      bottom: 100,
+                    }}
+                    series={[
+                      {
+                        data: [
+                          {
+                            id: 0,
+                            value: resultModel.incomeModel.netIncome,
+                            color: '#254081',
+                            label: 'Net Income',
+                          },
+                          {
+                            id: 1,
+                            value: resultModel.incomeModel.fedTaxes,
+                            color: 'red',
+                            label: 'Federal Taxes',
+                          },
+                          {
+                            id: 2,
+                            value: resultModel.incomeModel.stateTaxes,
+                            color: 'yellow',
+                            label: 'State Taxes',
+                          },
+                        ],
+
+                        outerRadius: 80,
+                        innerRadius: 0,
+                        paddingAngle: 1,
+                        cornerRadius: 8,
+                        startAngle: 180,
+                        endAngle: 540,
+                        highlightScope: {
+                          faded: 'global',
+                          highlighted: 'item',
+                        },
+                        faded: {
+                          innerRadius: 30,
+                          additionalRadius: -30,
+                          color: 'gray',
+                        },
+                      },
+                    ]}
+                    sx={{
+                      '& .MuiPieArc-root': { strokeWidth: '0px' },
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className='grid pt-8'>
+                <div className='flex justify-center items-end mb-6'>
+                  <button
+                    className='grid disabled:bg-slate-600 items-end justify-center bg-[#254081] drop-shadow-lg px-16 py-2 text-white rounded-3xl'
+                    onClick={() => window.location.reload()}>
+                    Start Over
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

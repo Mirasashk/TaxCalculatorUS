@@ -51,8 +51,6 @@ const InteractiveForm = ({ step, setStep }) => {
   };
 
   const handleChange = (e) => {
-    console.log(e.target.name, e.target.value);
-    console.log(e.target);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -128,8 +126,8 @@ const InteractiveForm = ({ step, setStep }) => {
   const renderStep0 = (
     <>
       <div className=' flex flex-col items-center h-72 w-full'>
-        <div className='text-2xl font-semibold pb-4'>Income</div>
-        <div className='grid w-[22rem] grid-cols-3 text-sm gap-1 mb-4 rounded-3xl bg-gray-200 p-0'>
+        <div className='text-2xl font-semibold pb-4'>Income Information</div>
+        <div className='grid w-[22rem] grid-cols-3 text-sm gap-1 mb-4 rounded-3xl bg-slate-300 p-0'>
           <div>
             <input
               type='radio'
@@ -196,19 +194,17 @@ const InteractiveForm = ({ step, setStep }) => {
           />
         </div>
       </div>
-      <div className='grid justify-center items-center mb-6'>
-        <button
-          disabled={formData.income === ''}
-          className='grid disabled:bg-slate-600 items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
-          onClick={(e) => {
-            setFormData({
-              ...formData,
-              income: parseInt(String(formData.income).replace(/,/g, '')),
-            });
-            handleNext(e);
-          }}>
-          Next
-        </button>
+      <div className='grid'>
+        <div className='flex justify-center items-end mb-6'>
+          <button
+            disabled={formData.income === ''}
+            className='grid disabled:bg-slate-600 items-end justify-center bg-blue-500 drop-shadow-lg px-8 py-2 text-white rounded-3xl'
+            onClick={(e) => {
+              handleNext(e);
+            }}>
+            Next
+          </button>
+        </div>
       </div>
     </>
   );
@@ -216,7 +212,7 @@ const InteractiveForm = ({ step, setStep }) => {
   const renderStep1 = (
     <>
       <div className=' flex flex-col items-center h-72 w-full'>
-        <div className='text-2xl font-semibold pb-4 pt-4'>
+        <div className='text-2xl font-semibold pb-4 '>
           Please select your state
         </div>
         <Autocomplete
@@ -240,14 +236,12 @@ const InteractiveForm = ({ step, setStep }) => {
             backgroundColor: 'white',
             borderRadius: '1rem',
             border: 'none',
-            '& fieldset': { border: 'none' },
-            '#combo-box-demo-label': { visibility: 'hidden' },
           }}
           renderInput={(params) => (
             <TextField
               {...params}
               placeholder='Select a state'
-              label='States'
+              label='Select a state'
               sx={{ border: 'none', borderRadius: '2rem' }}
             />
           )}
@@ -272,10 +266,10 @@ const InteractiveForm = ({ step, setStep }) => {
   const renderStep2 = (
     <>
       <div className=' flex flex-col items-center h-72 w-full'>
-        <div className='text-2xl font-semibold pb-4 pt-4'>Filing status</div>
-        <div className='grid w-[18rem] grid-cols-1 text-sm  mb-4 rounded-3xl bg-gray-200 p-3'>
+        <div className='text-2xl font-semibold pb-4 '>Filing status</div>
+        <div className='grid w-[18rem] grid-cols-1 text-sm   rounded-3xl bg-slate-300 p-3'>
           <div className='grid justify-center'>
-            <div className='flex items-center pb-2'>
+            <div className='flex items-center pb-1'>
               <input
                 type='radio'
                 name='filingStatus'
@@ -285,12 +279,12 @@ const InteractiveForm = ({ step, setStep }) => {
                 checked={formData.filingStatus === 'marriedJointly'}
                 onChange={handleChange}
               />
-              <label htmlFor='marriedJointly' className='text-xl'>
+              <label htmlFor='marriedJointly' className='text-xl w-full'>
                 Married Filing Jointly
               </label>
             </div>
 
-            <div className='flex items-center pb-2'>
+            <div className='flex items-center w-full pb-1'>
               <input
                 type='radio'
                 name='filingStatus'
@@ -300,7 +294,7 @@ const InteractiveForm = ({ step, setStep }) => {
                 checked={formData.filingStatus === 'marriedSeperate'}
                 onChange={handleChange}
               />
-              <label htmlFor='marriedSeperate' className='text-xl'>
+              <label htmlFor='marriedSeperate' className='text-xl w-full'>
                 Married Filing Separately
               </label>
             </div>
@@ -314,7 +308,7 @@ const InteractiveForm = ({ step, setStep }) => {
                 checked={formData.filingStatus === 'single'}
                 onChange={handleChange}
               />
-              <label htmlFor='single' className='text-xl'>
+              <label htmlFor='single' className='text-xl w-full'>
                 Single
               </label>
             </div>
@@ -328,7 +322,7 @@ const InteractiveForm = ({ step, setStep }) => {
                 checked={formData.filingStatus === 'headOfHouse'}
                 onChange={handleChange}
               />
-              <label htmlFor='headOfHouse' className='text-xl'>
+              <label htmlFor='headOfHouse' className='text-xl w-full'>
                 Head Of Household
               </label>
             </div>
@@ -356,7 +350,7 @@ const InteractiveForm = ({ step, setStep }) => {
         <div className='text-2xl font-semibold pb-4 pt-4'>
           Lets figure out deductions
         </div>
-        <div className='grid w-[14rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-gray-200 p-0'>
+        <div className='grid w-[14rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-slate-300'>
           <div>
             <input
               type='radio'
@@ -431,7 +425,7 @@ const InteractiveForm = ({ step, setStep }) => {
         <div className='text-2xl font-semibold pb-4 pt-4'>
           Lets count dependents
         </div>
-        <div className='grid w-[20rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-gray-200 p-0'>
+        <div className='grid w-[20rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-slate-300 '>
           <div>
             <input
               type='radio'
@@ -470,23 +464,22 @@ const InteractiveForm = ({ step, setStep }) => {
           <>
             <div className='w-[20rem] grid justify-center items-center '>
               <label htmlFor='numberOfDependents' className='italic'>
-                Enter the number of Dependents:
+                Enter total number of Dependents:
               </label>
               <div className='flex justify-center'>
                 <input
                   name='dependents'
                   type='number'
                   min={0}
-                  placeholder='Number of Dependents'
                   value={formData.dependents}
-                  className='border border-gray-400 w-[10rem] rounded-lg py-3 pl-8 '
+                  className='border border-slate-400 w-[6rem] rounded-lg py-3 text-center'
                   onChange={handleChange}
                 />
               </div>
             </div>
             <div className='w-[20rem] grid justify-center items-center '>
               <label htmlFor='numberOfDependentsU18' className='italic'>
-                Enter the number of Dependents under 16:
+                Enter number of Dependents under 16:
               </label>
               <div className='flex justify-center'>
                 <input
@@ -494,10 +487,15 @@ const InteractiveForm = ({ step, setStep }) => {
                   type='number'
                   min={0}
                   max={formData.dependents}
-                  placeholder='Number of Dependents under 18'
                   value={formData.dependentsU18}
-                  className='border border-gray-400 rounded-lg py-3 pl-8 w-[10rem]'
-                  onChange={handleChange}
+                  className='border border-slate-400 rounded-lg py-3 w-[6rem] text-center'
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value > formData.dependents) {
+                      e.target.value = formData.dependents;
+                    }
+                    handleChange(e);
+                  }}
                 />
               </div>
             </div>
@@ -523,17 +521,19 @@ const InteractiveForm = ({ step, setStep }) => {
     <>
       {!loading ? (
         <div className='grid justify-center pt-4'>
-          {step === 0
-            ? renderStep0
-            : step === 1
-            ? renderStep1
-            : step === 2
-            ? renderStep2
-            : step === 3
-            ? renderStep3
-            : step === 4
-            ? renderStep4
-            : 'Results'}
+          <div className='flex flex-col items-center w-full'>
+            {step === 0
+              ? renderStep0
+              : step === 1
+              ? renderStep1
+              : step === 2
+              ? renderStep2
+              : step === 3
+              ? renderStep3
+              : step === 4
+              ? renderStep4
+              : 'Results'}
+          </div>
         </div>
       ) : (
         <div className='flex justify-center items-center h-[23rem]'>
