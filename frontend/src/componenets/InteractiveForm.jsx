@@ -8,6 +8,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import states from 'states-us';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
+import NumberInput from './NumberInput';
 
 const InteractiveForm = ({ step, setStep }) => {
   // eslint-disable-next-line no-unused-vars
@@ -66,6 +67,7 @@ const InteractiveForm = ({ step, setStep }) => {
       ...formData,
       income: incomeMult,
       state: formData.state.toLowerCase(),
+      incomePeriod: 'anually',
       deductionAmount: parseInt(
         String(formData.deductionAmount).replace(/,/g, '')
       ),
@@ -79,12 +81,10 @@ const InteractiveForm = ({ step, setStep }) => {
     //dev http://localhost:5000/calculations
     //prod https://taxcalculatorus-api.web.app/calculations
     console.log('This processes firtst');
-    axios
-      .post('https://taxcalculatorus-api.web.app/calculations', formData)
-      .then((res) => {
-        console.log(res.data);
-        setResultModel(res.data);
-      });
+    axios.post('http://localhost:5000/calculations', formData).then((res) => {
+      console.log(res.data);
+      setResultModel(res.data);
+    });
     //navigate to results page
     console.log(formData);
   };
@@ -129,7 +129,7 @@ const InteractiveForm = ({ step, setStep }) => {
     <>
       <div className=' flex flex-col items-center h-72 w-full'>
         <div className='text-2xl font-semibold pb-4'>Income Information</div>
-        <div className='grid w-[22rem] grid-cols-3 text-sm gap-1 mb-4 rounded-3xl bg-slate-300 p-0'>
+        <div className='grid w-[18rem] mobile:w-[22rem] grid-cols-3 text-sm gap-0 mb-4 rounded-3xl bg-slate-300 p-0'>
           <div>
             <input
               type='radio'
@@ -142,7 +142,7 @@ const InteractiveForm = ({ step, setStep }) => {
             />
             <label
               htmlFor='anually'
-              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
+              className='block cursor-pointer select-none rounded-3xl px-0 py-2 text-center peer-checked:bg-blue-500 peer-checked:font-medium peer-checked:text-white'>
               Anually
             </label>
           </div>
@@ -159,7 +159,7 @@ const InteractiveForm = ({ step, setStep }) => {
             />
             <label
               htmlFor='semi-monthly'
-              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
+              className='block cursor-pointer select-none rounded-3xl px-0 py-2 text-center peer-checked:bg-blue-500 peer-checked:font-medium peer-checked:text-white'>
               Semi-Monthly
             </label>
           </div>
@@ -176,7 +176,7 @@ const InteractiveForm = ({ step, setStep }) => {
             />
             <label
               htmlFor='bi-weekly'
-              className='block cursor-pointer select-none rounded-3xl p-2 text-center peer-checked:bg-blue-500 peer-checked:font-bold peer-checked:text-white'>
+              className='block cursor-pointer select-none rounded-3xl px-0 py-2 text-center peer-checked:bg-blue-500 peer-checked:font-medium peer-checked:text-white'>
               Bi-Weekly
             </label>
           </div>
@@ -427,7 +427,7 @@ const InteractiveForm = ({ step, setStep }) => {
         <div className='text-2xl font-semibold pb-4 pt-4'>
           Lets count dependents
         </div>
-        <div className='grid w-[20rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-slate-300 '>
+        <div className='grid w-[18rem] grid-cols-2 text-sm gap-1 mb-4 rounded-3xl bg-slate-300 '>
           <div>
             <input
               type='radio'
@@ -464,41 +464,44 @@ const InteractiveForm = ({ step, setStep }) => {
         </div>
         {formData.hasDependents ? (
           <>
-            <div className='w-[20rem] grid justify-center items-center '>
-              <label htmlFor='numberOfDependents' className='italic'>
+            <div className='w-[18rem] grid justify-center items-center '>
+              <label htmlFor='numberOfDependents' className='italic pb-1'>
                 Enter total number of Dependents:
               </label>
-              <div className='flex justify-center'>
-                <input
-                  name='dependents'
-                  type='number'
+
+              <div className='flex justify-center '>
+                <NumberInput
+                  name='dependentsU18'
                   min={0}
                   value={formData.dependents}
-                  className='border border-slate-400 w-[6rem] rounded-lg py-3 text-center'
-                  onChange={handleChange}
+                  onChange={(event, newValue) => {
+                    setFormData({
+                      ...formData,
+                      dependents: newValue,
+                    });
+                  }}
                 />
               </div>
             </div>
-            <div className='w-[20rem] grid justify-center items-center '>
-              <label htmlFor='numberOfDependentsU18' className='italic'>
+            <div className='w-[18rem] grid justify-center items-center '>
+              <label htmlFor='numberOfDependentsU18' className='italic pb-1'>
                 Enter number of Dependents under 16:
               </label>
               <div className='flex justify-center'>
-                <input
-                  name='dependentsU18'
-                  type='number'
-                  min={0}
-                  max={formData.dependents}
-                  value={formData.dependentsU18}
-                  className='border border-slate-400 rounded-lg py-3 w-[6rem] text-center'
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (value > formData.dependents) {
-                      e.target.value = formData.dependents;
-                    }
-                    handleChange(e);
-                  }}
-                />
+                <div className='flex '>
+                  <NumberInput
+                    name='dependentsU18'
+                    min={0}
+                    max={formData.dependents}
+                    value={formData.dependentsU18}
+                    onChange={(event, newValue) => {
+                      setFormData({
+                        ...formData,
+                        dependentsU18: newValue,
+                      });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </>

@@ -47,7 +47,7 @@ const ResultView = () => {
     //prod https://taxcalculatorus-api.web.app/calculations
     console.log('This processes for recalculation');
     axios
-      .post('https://taxcalculatorus-api.web.app/calculations', newCalculation)
+      .post('http://localhost:5000/calculations', newCalculation)
       .then((res) => {
         console.log(res.data);
         setResultModel(res.data);
@@ -361,62 +361,122 @@ const ResultView = () => {
   );
 
   const results = (
-    <div className='grid grid-flow-row col-span-4 pt-10'>
-      <div className='grid grid-flow-row grid-cols-8 '>
-        <div className='flex flex-col col-span-5  text-xl '>
+    <div className='grid grid-flow-row col-span-4 pt-4 desktop:px-2 pb-4'>
+      <div className='grid grid-cols-8 text-xl '>
+        <div className='flex col-span-5'>
           <label htmlFor='income'>Gross Income:</label>
-          <label htmlFor='deduction'>Taxable Income:</label>
-          <label htmlFor='income period'>Federal Taxes:</label>
-          <label htmlFor='dependents'>Dependent Credits:</label>
-          <label htmlFor='state'>State Tax:</label>
-
-          <label htmlFor='deduction'>Effective Tax Rate:</label>
-          <label htmlFor='dependents'>Net Income:</label>
         </div>
-        <div className='flex flex-col col-span-3 text-xl font-medium pl-2'>
+        <div className='flex col-span-3 font-semibold justify-end'>
           <div>
             $
             {resultModel.incomeModel.income
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           </div>
+        </div>
+
+        <div className='flex col-span-5'>
+          <label htmlFor='income'>Deduction Amount:</label>
+        </div>
+        <div className='flex col-span-3 font-semibold justify-end'>
+          <div className='text-green-700'>
+            $
+            {resultModel.incomeModel.deductionAmount
+              .toFixed(2)
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+          </div>
+        </div>
+        <div className='col-span-8 py-2'>
+          <Divider
+            orientation='horizontal'
+            sx={{
+              height: '2px',
+              width: '100%',
+
+              borderRightWidth: '1.8px',
+              borderColor: '#192841',
+              opacity: 0.5,
+            }} // Modify the thickness here
+            textAlign='center'
+          />
+        </div>
+
+        <div className='flex col-span-5'>Taxable Income:</div>
+        <div className='flex col-span-3 font-semibold justify-end'>
           <div>
             $
             {resultModel.incomeModel.taxableIncome
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           </div>
+        </div>
+
+        <div className='flex col-span-5'>Federal Taxes:</div>
+        <div className='flex col-span-3 font-semibold justify-end'>
           <div className='text-red-700'>
             $
-            {resultModel.incomeModel.fedTaxes
+            {(
+              resultModel.incomeModel.fedTaxes +
+              resultModel.incomeModel.dependentTaxCredit
+            )
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           </div>
-          <div className='flex text-green-700'>
-            $
-            {resultModel.incomeModel.dependentTaxCredit
-              .toFixed(2)
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            <p className='flex items-center pl-2 text-sm text-black hidden'>
-              *Included in federal taxes
-            </p>
-          </div>
+        </div>
+
+        <div className='flex col-span-5'>State Tax:</div>
+        <div className='flex col-span-3 font-semibold justify-end'>
           <div className='text-red-700'>
             $
             {resultModel.incomeModel.stateTaxes
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           </div>
+        </div>
 
-          <div>{resultModel.incomeModel.effectiveTaxRate.toFixed(2)}%</div>
+        <div className='flex col-span-5'>Dependent Credits:</div>
+        <div className='flex col-span-3 font-semibold justify-end'>
           <div className='text-green-700'>
+            $
+            {resultModel.incomeModel.dependentTaxCredit
+              .toFixed(2)
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+          </div>
+        </div>
+
+        <div className='col-span-8 pb-3 pt-2'>
+          <Divider
+            orientation='horizontal'
+            sx={{
+              height: '2px',
+              width: '100%',
+
+              borderRightWidth: '1.8px',
+              borderColor: '#192841',
+              opacity: 0.5,
+            }} // Modify the thickness here
+            textAlign='center'
+          />
+        </div>
+
+        <div className='flex col-span-5 font-semibold text-xl '>
+          Net Income:
+        </div>
+        <div className='flex col-span-3 font-semibold justify-end'>
+          <div className='font-bold text-xl'>
             $
             {resultModel.incomeModel.netIncome
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           </div>
         </div>
-        <div className='col-span-2'></div>
+
+        <div className='flex col-span-5 font-semibold text-xl'>
+          Effective Tax Rate:
+        </div>
+        <div className='flex justify-end col-span-3 font-bold text-xl'>
+          <div>{resultModel.incomeModel.effectiveTaxRate.toFixed(2)}%</div>
+        </div>
       </div>
     </div>
   );
